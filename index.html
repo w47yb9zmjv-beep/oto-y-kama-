@@ -27,8 +27,12 @@ button{background:#111827;color:white;border:0;font-weight:600}
   
 </div>
   <div class="card">
-  <h3>💳 Veresiye Defteri</h3>
-  <div id="veresiyeListesi">Henüz veresiye yok.</div>
+<div class="card">
+  <h3 onclick="toggleVeresiye()" style="cursor:pointer;">
+    💳 Veresiye Defteri ▼
+  </h3>
+  <div id="veresiyeListesi" style="display:none;">Henüz veresiye yok.</div>
+</div>>
 </div>
 
 <div class="card">
@@ -77,7 +81,14 @@ cars.unshift({id:Date.now(),plate,customer,service,price,payment,status:document
 }
 function changeStatus(id,value){cars=cars.map(c=>c.id===id?{...c,status:value}:c);save();}
 function del(id){cars=cars.filter(c=>c.id!==id);save();}
-function render(){
+function render(){function toggleVeresiye(){
+  const liste=document.getElementById("veresiyeListesi");
+  if(liste.style.display==="none"){
+    liste.style.display="block";
+  }else{
+    liste.style.display="none";
+  }
+}
   const veresiyeGruplari={};
 
 cars
