@@ -92,6 +92,13 @@ function del(id){cars=cars.filter(c=>c.id!==id);save();}
   function toggleGecmis(){
   const liste=document.getElementById("gecmisListesi");
   liste.style.display = liste.style.display==="none" ? "block" : "none";
+function toggleVeresiye(){
+  const liste=document.getElementById("veresiyeListesi");
+  if(liste.style.display==="none"){
+    liste.style.display="block";
+  }else{
+    liste.style.display="none";
+  }
 }
 function render(){function toggleVeresiye(){
   function gunSonuKontrol(){
