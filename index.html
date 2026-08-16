@@ -22,6 +22,8 @@ button{background:#111827;color:white;border:0;font-weight:600}
 <div class="card stats">
   <div class="stat"><b id="count">0</b>Araç</div>
   <div class="stat"><b id="cari">₺0</b>Cari</div>
+<div class="stat"><b id="kasa">₺0</b>Kasa</div>
+  
 </div>
 
 <div class="card">
@@ -32,7 +34,17 @@ button{background:#111827;color:white;border:0;font-weight:600}
 <option>İç + Dış Yıkama</option><option>İç Yıkama</option><option>Dış Yıkama</option><option>Detaylı Temizlik</option>
 </select>
 <input id="price" type="number" placeholder="Ücret (₺)">
-<select id="payment"><option>Nakit</option><option>Kart</option><option>Cari</option></select>
+<select id="payment">
+  <option>Nakit</option>
+  <option>Cari</option>
+  <option>Veresiye</option>
+</select>
+ 
+  
+  <option>Nakit</option>
+  <option>Cari</option>
+  <option>Veresiye</option>
+
 <select id="status"><option>Bekliyor</option><option>Yıkanıyor</option><option>Hazır</option><option>Teslim edildi</option></select>
 <button onclick="addCar()">+ Araç Ekle</button>
 </div>
@@ -52,18 +64,30 @@ function addCar(){
 const service=document.getElementById("service").value;
 const payment=document.getElementById("payment").value;
  if(!plate){alert("Plaka yazmalısın.");return}
- cars.unshift({id:Date.now(),plate,customer,service:service,value,price,payment:payment,status:status:value,time:new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})});
+cars.unshift({id:Date.now(),plate,customer,service,price,payment,status:document.getElementById("status").value,time:new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})});
  ["plate","customer","price"].forEach(x=>document.getElementById(x).value="");
  save();
 }
 function changeStatus(id,value){cars=cars.map(c=>c.id===id?{...c,status:value}:c);save();}
 function del(id){cars=cars.filter(c=>c.id!==id);save();}
 function render(){
- document.getElementById("count").textContent=cars.length;
- const total=cars.filter(c=>c.payment==="Cari").reduce((a,c)=>a+c.price,0);
- document.getElementById("cari").textContent="₺"+total.toLocaleString("tr-TR");
- const list=document.getElementById("list");
- if(!cars.length){list.innerHTML='<p class="muted">Henüz araç eklenmedi.</p>';return}
+  const kasa=cars
+  .filter(c=>c.payment==="Nakit" && c.status==="Teslim edildi")
+  .reduce((a,c)=>a+c.price,0);
+
+const veresiye=cars
+  .filter(c=>c.payment==="Veresiye" && c.status==="Teslim edildi")
+  .reduce((a,c)=>a+c.price,0);
+
+const total=cars
+  .filter(c=>c.payment==="Cari")
+  .reduce((a,c)=>a+c.price,0);
+
+document.getElementById("kasa").textContent="₺"+kasa.toLocaleString("tr-TR");
+document.getElementById("veresiye").textContent="₺"+veresiye.toLocaleString("tr-TR");
+document.getElementById("count").textContent=cars.length;
+document.getElementById("cari").textContent="₺"+total.toLocaleString("tr-TR");
+const list=document.getElementById("list");
  list.innerHTML=cars.map(c=>`
  <div class="row">
   <b>${c.plate}</b> <span class="badge">${c.status}</span>
