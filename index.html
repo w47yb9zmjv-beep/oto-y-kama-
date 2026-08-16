@@ -78,6 +78,24 @@ cars.unshift({id:Date.now(),plate,customer,service,price,payment,status:document
 function changeStatus(id,value){cars=cars.map(c=>c.id===id?{...c,status:value}:c);save();}
 function del(id){cars=cars.filter(c=>c.id!==id);save();}
 function render(){
+  const veresiyeGruplari={};
+
+cars
+  .filter(c=>c.payment==="Veresiye")
+  .forEach(c=>{
+    const key=c.plate;
+    if(!veresiyeGruplari[key]){
+      veresiyeGruplari[key]={
+        plate:c.plate,
+        customer:c.customer,
+        items:[],
+        total:0
+      };
+    }
+
+    veresiyeGruplari[key].items.push(c);
+    veresiyeGruplari[key].total+=c.price;
+  });
   const kasa=cars
   .filter(c=>c.payment==="Nakit" && c.status==="Teslim edildi")
   .reduce((a,c)=>a+c.price,0);
