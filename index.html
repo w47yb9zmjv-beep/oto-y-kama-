@@ -49,6 +49,8 @@ function addCar(){
  const plate=document.getElementById("plate").value.trim().toUpperCase();
  const customer=document.getElementById("customer").value.trim();
  const price=Number(document.getElementById("price").value||0);
+const service=document.getElementById("service").value;
+const payment=document.getElementById("payment").value;
  if(!plate){alert("Plaka yazmalısın.");return}
  cars.unshift({id:Date.now(),plate,customer,service:service.value,price,payment:payment.value,status:status.value,time:new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})});
  ["plate","customer","price"].forEach(x=>document.getElementById(x).value="");
