@@ -30,6 +30,8 @@ button{background:#111827;color:white;border:0;font-weight:600}
 <div class="card">
 <h3>Yeni Araç</h3>
 <input id="plate" placeholder="Plaka">
+  <input id="plateCamera" type="file" accept="image/*" capture="environment" style="display:none">
+<button type="button" onclick="document.getElementById('plateCamera').click()">📷 Plaka Kamerası</button>
 <input id="customer" placeholder="Müşteri adı">
 <select id="service">
 <option>İç + Dış Yıkama</option><option>İç Yıkama</option><option>Dış Yıkama</option><option>Detaylı Temizlik</option>
