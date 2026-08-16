@@ -94,6 +94,30 @@ function del(id){cars=cars.filter(c=>c.id!==id);save();}
   liste.style.display = liste.style.display==="none" ? "block" : "none";
 }
 function render(){function toggleVeresiye(){
+  function gunSonuKontrol(){
+  const simdi = new Date();
+  const bugun = simdi.toLocaleDateString("tr-TR");
+  const sonArsiv = localStorage.getItem("sonArsivTarihi");
+
+  if(simdi.getHours() >= 20 && sonArsiv !== bugun){
+    const gecmis = JSON.parse(localStorage.getItem("gecmisKayitlar") || "[]");
+
+    if(cars.length > 0){
+      gecmis.unshift({
+        tarih: bugun,
+        araclar: [...cars]
+      });
+
+      localStorage.setItem("gecmisKayitlar", JSON.stringify(gecmis));
+
+      // Veresiye dışındaki günlük kayıtları temizle
+      cars = cars.filter(c => c.payment === "Veresiye");
+      save();
+    }
+
+    localStorage.setItem("sonArsivTarihi", bugun);
+  }
+}
   const liste=document.getElementById("veresiyeListesi");
   if(liste.style.display==="none"){
     liste.style.display="block";
@@ -147,6 +171,7 @@ const list=document.getElementById("list");
   <button class="delete" onclick="del(${c.id})">Sil</button>
  </div>`).join("");
 }
+  gunSonuKontrol();
 render();
 </script>
 </body>
