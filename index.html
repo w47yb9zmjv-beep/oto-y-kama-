@@ -1,193 +1,147 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Oto Yıkama Takip</title>
-<style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f6f8;margin:0;padding:16px;color:#17202a}
-h1{font-size:24px;margin:4px 0 14px}
-.card{background:white;border-radius:16px;padding:14px;margin-bottom:14px;box-shadow:0 2px 10px #00000012}
-input,select,button{width:100%;box-sizing:border-box;padding:12px;border:1px solid #d9dee3;border-radius:10px;font-size:16px;margin:5px 0}
-button{background:#111827;color:white;border:0;font-weight:600}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#eef2ff;padding:12px;border-radius:12px;text-align:center}.stat b{display:block;font-size:21px}
-.row{border:1px solid #e3e7eb;border-radius:12px;padding:12px;margin-top:10px}
-.badge{display:inline-block;padding:5px 8px;border-radius:8px;background:#eef2f7;font-size:13px}
-.delete{background:#ef4444;margin-top:8px}.muted{color:#667085;font-size:13px}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f766e">
+  <title>Oto Yıkama Takip</title>
+  <style>
+    :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033;background:#eef2f7}
+    *{box-sizing:border-box} body{margin:0;padding:16px;max-width:900px;margin:auto}
+    h1{margin:8px 0 16px;font-size:25px}.card{background:#fff;border-radius:16px;padding:15px;margin:12px 0;box-shadow:0 4px 18px #1f293712}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{text-align:center;background:#f3f6fa;border-radius:12px;padding:11px 5px;font-size:12px}.stat b{display:block;font-size:20px;color:#0f766e;margin-bottom:3px}
+    input,select,button{width:100%;font:inherit;border:1px solid #ccd4df;border-radius:11px;padding:12px;margin:5px 0;background:#fff}
+    button{border:0;background:#0f766e;color:#fff;font-weight:700}.secondary{background:#e8eef4;color:#253046}.danger{background:#b42318}.paid{background:#2563eb}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.row{border-top:1px solid #e5e9ef;padding:13px 0}.row:first-child{border:0}.titleline{display:flex;justify-content:space-between;gap:8px;align-items:center}.badge{font-size:12px;background:#e6f4f1;color:#0f766e;padding:5px 8px;border-radius:99px;white-space:nowrap}.muted{color:#667085;font-size:13px}.actions{display:grid;grid-template-columns:1fr auto;gap:8px}.actions .danger{width:auto}.empty{text-align:center;color:#667085;padding:18px}.section-title{cursor:pointer;user-select:none;margin:0}.notice{font-size:12px;color:#667085;margin:8px 0 0}.credit-head{display:flex;justify-content:space-between;gap:8px}.credit-total{font-weight:800;color:#b42318}
+    @media(max-width:600px){.stats{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}body{padding:12px}}
+  </style>
 </head>
 <body>
-<h1>🚗 Oto Yıkama Takip</h1>
+  <h1>🚗 Oto Yıkama Takip</h1>
 
-<div class="card stats">
-  <div class="stat"><b id="count">0</b>Araç</div>
-  <div class="stat"><b id="cari">₺0</b>Cari</div>
-<div class="stat"><b id="kasa">₺0</b>Kasa</div>
-  <div class="stat"><b id="veresiye">₺0</b>Veresiye</div>
-  
-</div>
-  <div class="card">
-<div class="card">
-  <h3 onclick="toggleVeresiye()" style="cursor:pointer;">
-    💳 Veresiye Defteri ▼
-  </h3>
-  <div id="veresiyeListesi" style="display:none;">Henüz veresiye yok.</div>
-</div>>
-</div>
-  <div class="card">
-  <h3 onclick="toggleGecmis()" style="cursor:pointer;">
-    📚 Geçmiş Kayıtlar ▼
-  </h3>
-  <div id="gecmisListesi" style="display:none;">
-    Henüz geçmiş kayıt yok.
+  <div class="card stats">
+    <div class="stat"><b id="count">0</b>Araç</div>
+    <div class="stat"><b id="ciro">₺0</b>Ciro</div>
+    <div class="stat"><b id="kasa">₺0</b>Kasa</div>
+    <div class="stat"><b id="veresiye">₺0</b>Veresiye</div>
   </div>
-</div
 
-<div class="card">
-<h3>Yeni Araç</h3>
-<input id="plate" placeholder="Plaka">
-  <input id="plateCamera" type="file" accept="image/*" capture="environment" style="display:none">
-<button type="button" onclick="document.getElementById('plateCamera').click()">📷 Plaka Kamerası</button>
-<input id="customer" placeholder="Müşteri adı">
-<select id="service">
-<option>İç + Dış Yıkama</option><option>İç Yıkama</option><option>Dış Yıkama</option><option>Detaylı Temizlik</option>
-</select>
-<input id="price" type="number" placeholder="Ücret (₺)">
-<select id="payment">
-  <option>Nakit</option>
-  <option>Cari</option>
-  <option>Veresiye</option>
-</select>
- 
-  
-  <option>Nakit</option>
-  <option>Cari</option>
-  <option>Veresiye</option>
+  <div class="card">
+    <h3 class="section-title" onclick="toggle('veresiyeListesi')">💳 Veresiye Defteri ▼</h3>
+    <div id="veresiyeListesi" style="display:none"></div>
+  </div>
 
-<select id="status"><option>Bekliyor</option><option>Yıkanıyor</option><option>Hazır</option><option>Teslim edildi</option></select>
-<button onclick="addCar()">+ Araç Ekle</button>
-</div>
+  <div class="card">
+    <h3 class="section-title" onclick="toggle('gecmisListesi')">📚 Geçmiş Kayıtlar ▼</h3>
+    <div id="gecmisListesi" style="display:none"></div>
+  </div>
 
-<div class="card">
-<h3>Araçlar</h3>
-<div id="list"></div>
-</div>
+  <div class="card">
+    <h3>Yeni Araç</h3>
+    <input id="plate" placeholder="Plaka" autocapitalize="characters">
+    <label class="muted" for="plateCamera">Plakanın fotoğrafını çek</label>
+    <input id="plateCamera" type="file" accept="image/*" capture="environment">
+    <input id="customer" placeholder="Müşteri adı (isteğe bağlı)">
+    <div class="grid">
+      <select id="service">
+        <option>İç + Dış Yıkama</option><option>İç Yıkama</option><option>Dış Yıkama</option><option>Detaylı Temizlik</option><option>Pasta Cila</option><option>Diğer</option>
+      </select>
+      <input id="price" type="number" min="0" inputmode="decimal" placeholder="Ücret">
+    </div>
+    <div class="grid">
+      <select id="payment"><option>Nakit</option><option>Kart</option><option>Veresiye</option></select>
+      <select id="status"><option>Bekliyor</option><option>Yıkanıyor</option><option>Hazır</option><option>Teslim Edildi</option></select>
+    </div>
+    <button type="button" onclick="addCar()">+ Araç Ekle</button>
+    <p class="notice">Kamera fotoğrafı açılır; plaka şimdilik kutuya elle yazılır.</p>
+  </div>
+
+  <div class="card"><h3>Araçlar</h3><div id="list"></div></div>
 
 <script>
-let cars=JSON.parse(localStorage.getItem("otoCars")||"[]");
-function save(){localStorage.setItem("otoCars",JSON.stringify(cars));render();}
+const CAR_KEY="otoCars";
+const HISTORY_KEY="gecmisKayitlar";
+const CLOSE_KEY="sonArsivTarihi";
+const WASH_KEY="plakaYikamaSayilari";
+
+let cars=safeArray(CAR_KEY);
+let history=safeArray(HISTORY_KEY);
+let washCounts=safeObject(WASH_KEY);
+
+function safeArray(key){try{const v=JSON.parse(localStorage.getItem(key));return Array.isArray(v)?v:[]}catch{return []}}
+function safeObject(key){try{const v=JSON.parse(localStorage.getItem(key));return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}catch{return {}}}
+function save(){localStorage.setItem(CAR_KEY,JSON.stringify(cars));localStorage.setItem(HISTORY_KEY,JSON.stringify(history));localStorage.setItem(WASH_KEY,JSON.stringify(washCounts))}
+function money(n){return "₺"+Number(n||0).toLocaleString("tr-TR")}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function dayText(d=new Date()){return d.toLocaleDateString("tr-TR")}
+function normalizePlate(v){return v.toLocaleUpperCase("tr-TR").replace(/[^0-9A-ZÇĞİÖŞÜ]/g,"").trim()}
+function toggle(id){const el=document.getElementById(id);el.style.display=el.style.display==="none"?"block":"none"}
+
 function addCar(){
- const plate=document.getElementById("plate").value.trim().toUpperCase();
- const customer=document.getElementById("customer").value.trim();
- const price=Number(document.getElementById("price").value||0);
-const service=document.getElementById("service").value;
-const payment=document.getElementById("payment").value;
- if(!plate){alert("Plaka yazmalısın.");return}
-cars.unshift({id:Date.now(),plate,customer,service,price,payment,status:document.getElementById("status").value,time:new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})});
- ["plate","customer","price"].forEach(x=>document.getElementById(x).value="");
- save();
+  const plate=normalizePlate(document.getElementById("plate").value);
+  const customer=document.getElementById("customer").value.trim();
+  const price=Number(document.getElementById("price").value);
+  const service=document.getElementById("service").value;
+  const payment=document.getElementById("payment").value;
+  const status=document.getElementById("status").value;
+  if(!plate){alert("Plaka yazmalısın.");return}
+  if(!Number.isFinite(price)||price<0){alert("Geçerli bir ücret yazmalısın.");return}
+  washCounts[plate]=(Number(washCounts[plate])||0)+1;
+  cars.unshift({id:Date.now(),plate,customer,price,service,payment,status,washNo:washCounts[plate],createdAt:new Date().toISOString()});
+  ["plate","customer","price","plateCamera"].forEach(id=>document.getElementById(id).value="");
+  save();render();
 }
-function changeStatus(id,value){cars=cars.map(c=>c.id===id?{...c,status:value}:c);save();}
-function del(id){cars=cars.filter(c=>c.id!==id);save();}
-  function toggleGecmis(){
-  const liste=document.getElementById("gecmisListesi");
-  liste.style.display = liste.style.display==="none" ? "block" : "none";
-function toggleVeresiye(){
-  const liste=document.getElementById("veresiyeListesi");
-  if(liste.style.display==="none"){
-    liste.style.display="block";
-  }else{
-    liste.style.display="none";
-  }
-function toggleVeresiye(){
-  const liste=document.getElementById("veresiyeListesi");
-  if(liste.style.display==="none"){
-    liste.style.display="block";
-  }else{
-    liste.style.display="none";
-  }
+
+function changeStatus(id,value){const car=cars.find(c=>c.id===id);if(car){car.status=value;save();render()}}
+function delCar(id){if(!confirm("Bu araç kaydı silinsin mi?"))return;cars=cars.filter(c=>c.id!==id);save();render()}
+function collectCredit(plate){
+  const open=cars.filter(c=>c.plate===plate&&c.payment==="Veresiye");
+  if(!open.length)return;
+  if(!confirm(plate+" için "+money(open.reduce((a,c)=>a+Number(c.price||0),0))+" tahsil edildi mi?"))return;
+  open.forEach(c=>{c.payment="Nakit";c.collectedAt=new Date().toISOString()});save();render();
 }
-function render(){function toggleVeresiye(){
-  function gunSonuKontrol(){
-  const simdi = new Date();
-  const bugun = simdi.toLocaleDateString("tr-TR");
-  const sonArsiv = localStorage.getItem("sonArsivTarihi");
 
-  if(simdi.getHours() >= 20 && sonArsiv !== bugun){
-    const gecmis = JSON.parse(localStorage.getItem("gecmisKayitlar") || "[]");
-
-    if(cars.length > 0){
-      gecmis.unshift({
-        tarih: bugun,
-        araclar: [...cars]
-      });
-
-      localStorage.setItem("gecmisKayitlar", JSON.stringify(gecmis));
-
-      // Veresiye dışındaki günlük kayıtları temizle
-      cars = cars.filter(c => c.payment === "Veresiye");
-      save();
-    }
-
-    localStorage.setItem("sonArsivTarihi", bugun);
-  }
+function closeDayIfNeeded(){
+  const now=new Date();
+  if(now.getHours()<20)return;
+  const today=dayText(now);
+  if(localStorage.getItem(CLOSE_KEY)===today)return;
+  const daily=cars.filter(c=>c.payment!=="Veresiye");
+  if(daily.length)history.unshift({date:today,cars:daily});
+  cars=cars.filter(c=>c.payment==="Veresiye");
+  localStorage.setItem(CLOSE_KEY,today);save();
 }
-  const liste=document.getElementById("veresiyeListesi");
-  if(liste.style.display==="none"){
-    liste.style.display="block";
-  }else{
-    liste.style.display="none";
-  }
+
+function carRow(c){
+  const options=["Bekliyor","Yıkanıyor","Hazır","Teslim Edildi"].map(s=>`<option ${c.status===s?"selected":""}>${s}</option>`).join("");
+  return `<div class="row"><div class="titleline"><b>${esc(c.plate)}</b><span class="badge">${esc(c.washNo||washCounts[c.plate]||1)}. yıkama</span></div><div>${esc(c.customer||"Müşteri adı yok")} · ${esc(c.service||"")}</div><div><b>${money(c.price)}</b> · ${esc(c.payment||"Nakit")}</div><div class="actions"><select onchange="changeStatus(${Number(c.id)},this.value)">${options}</select><button class="danger" onclick="delCar(${Number(c.id)})">Sil</button></div></div>`;
 }
-  const veresiyeGruplari={};
 
-cars
-  .filter(c=>c.payment==="Veresiye")
-  .forEach(c=>{
-    const key=c.plate;
-    if(!veresiyeGruplari[key]){
-      veresiyeGruplari[key]={
-        plate:c.plate,
-        customer:c.customer,
-        items:[],
-        total:0
-      };
-    }
-
-    veresiyeGruplari[key].items.push(c);
-    veresiyeGruplari[key].total+=c.price;
-  });
-  const kasa=cars
-  .filter(c=>c.payment==="Nakit" && c.status==="Teslim edildi")
-  .reduce((a,c)=>a+c.price,0);
-
-const veresiye=cars
-  .filter(c=>c.payment==="Veresiye" && c.status==="Teslim edildi")
-  .reduce((a,c)=>a+c.price,0);
-
-const total=cars
-  .filter(c=>c.payment==="Cari")
-  .reduce((a,c)=>a+c.price,0);
-
-document.getElementById("kasa").textContent="₺"+kasa.toLocaleString("tr-TR");
-document.getElementById("veresiye").textContent="₺"+veresiye.toLocaleString("tr-TR");
-document.getElementById("count").textContent=cars.length;
-document.getElementById("cari").textContent="₺"+total.toLocaleString("tr-TR");
-const list=document.getElementById("list");
- list.innerHTML=cars.map(c=>`
- <div class="row">
-  <b>${c.plate}</b> <span class="badge">${c.status}</span>
-  <div>${c.customer||"Müşteri adı yok"} · ${c.service}</div>
-  <div><b>₺${c.price.toLocaleString("tr-TR")}</b> · ${c.payment} · ${c.time}</div>
-  <select onchange="changeStatus(${c.id},this.value)">
-   ${["Bekliyor","Yıkanıyor","Hazır","Teslim edildi"].map(s=>`<option ${s===c.status?"selected":""}>${s}</option>`).join("")}
-  </select>
-  <button class="delete" onclick="del(${c.id})">Sil</button>
- </div>`).join("");
+function renderCredit(){
+  const groups={};
+  cars.filter(c=>c.payment==="Veresiye").forEach(c=>{if(!groups[c.plate])groups[c.plate]={customer:c.customer,items:[],total:0};groups[c.plate].items.push(c);groups[c.plate].total+=Number(c.price||0)});
+  const values=Object.entries(groups);
+  document.getElementById("veresiyeListesi").innerHTML=values.length?values.map(([plate,g])=>`<div class="row"><div class="credit-head"><div><b>${esc(plate)}</b><div class="muted">${esc(g.customer||"Müşteri adı yok")} · ${g.items.length} yıkama</div></div><span class="credit-total">${money(g.total)}</span></div>${g.items.map((c,i)=>`<div class="muted">${i+1}. yıkama — ${esc(c.service||"")} — ${money(c.price)}</div>`).join("")}<button class="paid" onclick="collectCredit('${esc(plate)}')">Ödeme Alındı</button></div>`).join(""):`<div class="empty">Açık veresiye kaydı yok.</div>`;
 }
-  gunSonuKontrol();
-render();
+
+function renderHistory(){
+  document.getElementById("gecmisListesi").innerHTML=history.length?history.map(h=>`<div class="row"><b>${esc(h.date)}</b><div class="muted">${h.cars.length} araç · ${money(h.cars.reduce((a,c)=>a+Number(c.price||0),0))}</div></div>`).join(""):`<div class="empty">Henüz geçmiş kayıt yok.</div>`;
+}
+
+function render(){
+  closeDayIfNeeded();
+  const paid=cars.filter(c=>c.payment!=="Veresiye").reduce((a,c)=>a+Number(c.price||0),0);
+  const cash=cars.filter(c=>(c.payment==="Nakit"||c.payment==="Cari")&&c.status==="Teslim Edildi").reduce((a,c)=>a+Number(c.price||0),0);
+  const credit=cars.filter(c=>c.payment==="Veresiye").reduce((a,c)=>a+Number(c.price||0),0);
+  document.getElementById("count").textContent=cars.length;
+  document.getElementById("ciro").textContent=money(paid);
+  document.getElementById("kasa").textContent=money(cash);
+  document.getElementById("veresiye").textContent=money(credit);
+  document.getElementById("list").innerHTML=cars.length?cars.map(carRow).join(""):`<div class="empty">Bugün henüz araç eklenmedi.</div>`;
+  renderCredit();renderHistory();
+}
+
+closeDayIfNeeded();render();setInterval(()=>{closeDayIfNeeded();render()},60000);
 </script>
 </body>
 </html>
-<
