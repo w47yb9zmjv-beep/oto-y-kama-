@@ -50,10 +50,12 @@
 
   <div class="card">
     <h3>Yeni Araç</h3>
-    <input id="plate" placeholder="Plaka" autocapitalize="characters">
+    <input id="plate" placeholder="Plaka" autocapitalize="characters" list="plateSuggestions">
+    <datalist id="plateSuggestions"></datalist>
     <label class="muted" for="plateCamera">Plakanın fotoğrafını çek</label>
     <input id="plateCamera" type="file" accept="image/*" capture="environment">
-    <input id="customer" placeholder="Müşteri adı (isteğe bağlı)">
+    <input id="customer" placeholder="Müşteri adı (isteğe bağlı)" list="customerSuggestions">
+    <datalist id="customerSuggestions"></datalist>
     <div class="grid">
       <select id="service">
         <option>İç + Dış Yıkama</option><option>İç Yıkama</option><option>Dış Yıkama</option><option>Detaylı Temizlik</option><option>Pasta Cila</option><option>Diğer</option>
@@ -76,20 +78,51 @@ const HISTORY_KEY="gecmisKayitlar";
 const CLOSE_KEY="sonArsivTarihi";
 const WASH_KEY="plakaYikamaSayilari";
 const EXPENSE_KEY="gunlukGiderler";
+const CUSTOMER_KEY="musteriHafizasi";
 
 let cars=safeArray(CAR_KEY);
 let history=safeArray(HISTORY_KEY);
 let washCounts=safeObject(WASH_KEY);
 let expenses=safeArray(EXPENSE_KEY);
+let customers=safeArray(CUSTOMER_KEY);
 
 function safeArray(key){try{const v=JSON.parse(localStorage.getItem(key));return Array.isArray(v)?v:[]}catch{return []}}
 function safeObject(key){try{const v=JSON.parse(localStorage.getItem(key));return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}catch{return {}}}
-function save(){localStorage.setItem(CAR_KEY,JSON.stringify(cars));localStorage.setItem(HISTORY_KEY,JSON.stringify(history));localStorage.setItem(WASH_KEY,JSON.stringify(washCounts));localStorage.setItem(EXPENSE_KEY,JSON.stringify(expenses))}
+function save(){localStorage.setItem(CAR_KEY,JSON.stringify(cars));localStorage.setItem(HISTORY_KEY,JSON.stringify(history));localStorage.setItem(WASH_KEY,JSON.stringify(washCounts));localStorage.setItem(EXPENSE_KEY,JSON.stringify(expenses));localStorage.setItem(CUSTOMER_KEY,JSON.stringify(customers))}
 function money(n){return "₺"+Number(n||0).toLocaleString("tr-TR")}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function dayText(d=new Date()){return d.toLocaleDateString("tr-TR")}
+function dateTimeText(value){const d=value?new Date(value):new Date();return Number.isNaN(d.getTime())?"Tarih yok":d.toLocaleString("tr-TR",{dateStyle:"short",timeStyle:"short"})}
 function normalizePlate(v){return v.toLocaleUpperCase("tr-TR").replace(/[^0-9A-ZÇĞİÖŞÜ]/g,"").trim()}
+function normalizeName(v){return String(v||"").toLocaleLowerCase("tr-TR").trim()}
 function toggle(id){const el=document.getElementById(id);el.style.display=el.style.display==="none"?"block":"none"}
+
+function rememberCustomer(record){
+  const plate=normalizePlate(record.plate||"");
+  if(!plate)return;
+  const found=customers.find(c=>normalizePlate(c.plate)===plate);
+  const data={plate,customer:String(record.customer||"").trim(),service:record.service||"İç + Dış Yıkama",price:Number(record.price||0),updatedAt:record.createdAt||new Date().toISOString()};
+  if(found)Object.assign(found,data);else customers.unshift(data);
+}
+function buildCustomerMemory(){
+  if(customers.length)return;
+  history.slice().reverse().forEach(h=>(h.cars||[]).forEach(rememberCustomer));
+  cars.slice().reverse().forEach(rememberCustomer);
+  save();
+}
+function fillKnownCustomer(record,source){
+  if(!record)return;
+  if(source!=="plate")document.getElementById("plate").value=record.plate||"";
+  if(source!=="customer")document.getElementById("customer").value=record.customer||"";
+  if(record.service)document.getElementById("service").value=record.service;
+  if(Number(record.price)>=0)document.getElementById("price").value=record.price;
+}
+function findByPlate(){const value=normalizePlate(document.getElementById("plate").value);const record=customers.find(c=>normalizePlate(c.plate)===value);fillKnownCustomer(record,"plate")}
+function findByCustomer(){const value=normalizeName(document.getElementById("customer").value);if(!value)return;const record=customers.find(c=>normalizeName(c.customer)===value);fillKnownCustomer(record,"customer")}
+function renderSuggestions(){
+  document.getElementById("plateSuggestions").innerHTML=customers.map(c=>`<option value="${esc(c.plate)}">${esc(c.customer||"")}</option>`).join("");
+  document.getElementById("customerSuggestions").innerHTML=customers.filter(c=>c.customer).map(c=>`<option value="${esc(c.customer)}">${esc(c.plate)}</option>`).join("");
+}
 
 function addCar(){
   const plate=normalizePlate(document.getElementById("plate").value);
@@ -101,7 +134,9 @@ function addCar(){
   if(!plate){alert("Plaka yazmalısın.");return}
   if(!Number.isFinite(price)||price<0){alert("Geçerli bir ücret yazmalısın.");return}
   washCounts[plate]=(Number(washCounts[plate])||0)+1;
-  cars.unshift({id:Date.now(),plate,customer,price,service,payment,status,washNo:washCounts[plate],createdAt:new Date().toISOString()});
+  const record={id:Date.now(),plate,customer,price,service,payment,status,washNo:washCounts[plate],createdAt:new Date().toISOString()};
+  cars.unshift(record);
+  rememberCustomer(record);
   ["plate","customer","price","plateCamera"].forEach(id=>document.getElementById(id).value="");
   save();render();
 }
@@ -141,14 +176,14 @@ function closeDayIfNeeded(){
 
 function carRow(c){
   const options=["Bekliyor","Yıkanıyor","Hazır","Teslim Edildi"].map(s=>`<option ${c.status===s?"selected":""}>${s}</option>`).join("");
-  return `<div class="row"><div class="titleline"><b>${esc(c.plate)}</b><span class="badge">${esc(c.washNo||washCounts[c.plate]||1)}. yıkama</span></div><div>${esc(c.customer||"Müşteri adı yok")} · ${esc(c.service||"")}</div><div><b>${money(c.price)}</b> · ${esc(c.payment||"Nakit")}</div><div class="actions"><select onchange="changeStatus(${Number(c.id)},this.value)">${options}</select><button class="danger" onclick="delCar(${Number(c.id)})">Sil</button></div></div>`;
+  return `<div class="row"><div class="titleline"><b>${esc(c.plate)}</b><span class="badge">${esc(c.washNo||washCounts[c.plate]||1)}. yıkama</span></div><div>${esc(c.customer||"Müşteri adı yok")} · ${esc(c.service||"")}</div><div><b>${money(c.price)}</b> · ${esc(c.payment||"Nakit")}</div><div class="muted">📅 ${dateTimeText(c.createdAt)}</div><div class="actions"><select onchange="changeStatus(${Number(c.id)},this.value)">${options}</select><button class="danger" onclick="delCar(${Number(c.id)})">Sil</button></div></div>`;
 }
 
 function renderCredit(){
   const groups={};
   cars.filter(c=>c.payment==="Veresiye").forEach(c=>{if(!groups[c.plate])groups[c.plate]={customer:c.customer,items:[],total:0};groups[c.plate].items.push(c);groups[c.plate].total+=Number(c.price||0)});
   const values=Object.entries(groups);
-  document.getElementById("veresiyeListesi").innerHTML=values.length?values.map(([plate,g])=>`<div class="row"><div class="credit-head"><div><b>${esc(plate)}</b><div class="muted">${esc(g.customer||"Müşteri adı yok")} · ${g.items.length} yıkama</div></div><span class="credit-total">${money(g.total)}</span></div>${g.items.map((c,i)=>`<div class="muted">${i+1}. yıkama — ${esc(c.service||"")} — ${money(c.price)}</div>`).join("")}<button class="paid" onclick="collectCredit('${esc(plate)}')">Ödeme Alındı</button></div>`).join(""):`<div class="empty">Açık veresiye kaydı yok.</div>`;
+  document.getElementById("veresiyeListesi").innerHTML=values.length?values.map(([plate,g])=>`<div class="row"><div class="credit-head"><div><b>${esc(plate)}</b><div class="muted">${esc(g.customer||"Müşteri adı yok")} · ${g.items.length} yıkama</div></div><span class="credit-total">${money(g.total)}</span></div>${g.items.map((c,i)=>`<div class="muted">${i+1}. yıkama — ${esc(c.service||"")} — ${money(c.price)} — 📅 ${dateTimeText(c.createdAt)}</div>`).join("")}<button class="paid" onclick="collectCredit('${esc(plate)}')">Ödeme Alındı</button></div>`).join(""):`<div class="empty">Açık veresiye kaydı yok.</div>`;
 }
 
 function renderHistory(){
@@ -156,7 +191,7 @@ function renderHistory(){
 }
 
 function renderExpenses(){
-  document.getElementById("expenseList").innerHTML=expenses.length?expenses.map(e=>`<div class="row"><div class="titleline"><div><b>${esc(e.description)}</b><div class="muted">${new Date(e.createdAt).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</div></div><b>${money(e.amount)}</b></div><button class="danger" onclick="delExpense(${Number(e.id)})">Gideri Sil</button></div>`).join(""):`<div class="empty">Bugün gider eklenmedi.</div>`;
+  document.getElementById("expenseList").innerHTML=expenses.length?expenses.map(e=>`<div class="row"><div class="titleline"><div><b>${esc(e.description)}</b><div class="muted">📅 ${dateTimeText(e.createdAt)}</div></div><b>${money(e.amount)}</b></div><button class="danger" onclick="delExpense(${Number(e.id)})">Gideri Sil</button></div>`).join(""):`<div class="empty">Bugün gider eklenmedi.</div>`;
 }
 
 function render(){
@@ -173,9 +208,12 @@ function render(){
   document.getElementById("veresiye").textContent=money(credit);
   document.getElementById("list").innerHTML=cars.length?cars.map(carRow).join(""):`<div class="empty">Bugün henüz araç eklenmedi.</div>`;
   renderCredit();renderHistory();renderExpenses();
+  renderSuggestions();
 }
 
-closeDayIfNeeded();render();setInterval(()=>{closeDayIfNeeded();render()},60000);
+document.getElementById("plate").addEventListener("input",findByPlate);
+document.getElementById("customer").addEventListener("input",findByCustomer);
+buildCustomerMemory();closeDayIfNeeded();render();setInterval(()=>{closeDayIfNeeded();render()},60000);
 </script>
 </body>
 </html>
