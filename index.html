@@ -22,6 +22,8 @@
   <div class="card stats">
     <div class="stat"><b id="count">0</b>Araç</div>
     <div class="stat"><b id="ciro">₺0</b>Ciro</div>
+    <div class="stat"><b id="gider">₺0</b>Gider</div>
+    <div class="stat"><b id="net">₺0</b>Net Kalan</div>
     <div class="stat"><b id="kasa">₺0</b>Kasa</div>
     <div class="stat"><b id="veresiye">₺0</b>Veresiye</div>
   </div>
@@ -34,6 +36,16 @@
   <div class="card">
     <h3 class="section-title" onclick="toggle('gecmisListesi')">📚 Geçmiş Kayıtlar ▼</h3>
     <div id="gecmisListesi" style="display:none"></div>
+  </div>
+
+  <div class="card">
+    <h3 class="section-title" onclick="toggle('giderBolumu')">🧾 Günlük Giderler ▼</h3>
+    <div id="giderBolumu" style="display:none">
+      <input id="expenseDesc" placeholder="Gider açıklaması (kimyasal, yemek vb.)">
+      <input id="expenseAmount" type="number" min="0" inputmode="decimal" placeholder="Gider tutarı">
+      <button type="button" onclick="addExpense()">+ Gider Ekle</button>
+      <div id="expenseList"></div>
+    </div>
   </div>
 
   <div class="card">
@@ -63,14 +75,16 @@ const CAR_KEY="otoCars";
 const HISTORY_KEY="gecmisKayitlar";
 const CLOSE_KEY="sonArsivTarihi";
 const WASH_KEY="plakaYikamaSayilari";
+const EXPENSE_KEY="gunlukGiderler";
 
 let cars=safeArray(CAR_KEY);
 let history=safeArray(HISTORY_KEY);
 let washCounts=safeObject(WASH_KEY);
+let expenses=safeArray(EXPENSE_KEY);
 
 function safeArray(key){try{const v=JSON.parse(localStorage.getItem(key));return Array.isArray(v)?v:[]}catch{return []}}
 function safeObject(key){try{const v=JSON.parse(localStorage.getItem(key));return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}catch{return {}}}
-function save(){localStorage.setItem(CAR_KEY,JSON.stringify(cars));localStorage.setItem(HISTORY_KEY,JSON.stringify(history));localStorage.setItem(WASH_KEY,JSON.stringify(washCounts))}
+function save(){localStorage.setItem(CAR_KEY,JSON.stringify(cars));localStorage.setItem(HISTORY_KEY,JSON.stringify(history));localStorage.setItem(WASH_KEY,JSON.stringify(washCounts));localStorage.setItem(EXPENSE_KEY,JSON.stringify(expenses))}
 function money(n){return "₺"+Number(n||0).toLocaleString("tr-TR")}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function dayText(d=new Date()){return d.toLocaleDateString("tr-TR")}
@@ -101,14 +115,27 @@ function collectCredit(plate){
   open.forEach(c=>{c.payment="Nakit";c.collectedAt=new Date().toISOString()});save();render();
 }
 
+function addExpense(){
+  const description=document.getElementById("expenseDesc").value.trim();
+  const amount=Number(document.getElementById("expenseAmount").value);
+  if(!description){alert("Gider açıklaması yazmalısın.");return}
+  if(!Number.isFinite(amount)||amount<=0){alert("Geçerli bir gider tutarı yazmalısın.");return}
+  expenses.unshift({id:Date.now(),description,amount,createdAt:new Date().toISOString()});
+  document.getElementById("expenseDesc").value="";
+  document.getElementById("expenseAmount").value="";
+  save();render();
+}
+function delExpense(id){if(!confirm("Bu gider kaydı silinsin mi?"))return;expenses=expenses.filter(e=>e.id!==id);save();render()}
+
 function closeDayIfNeeded(){
   const now=new Date();
   if(now.getHours()<20)return;
   const today=dayText(now);
   if(localStorage.getItem(CLOSE_KEY)===today)return;
   const daily=cars.filter(c=>c.payment!=="Veresiye");
-  if(daily.length)history.unshift({date:today,cars:daily});
+  if(daily.length||expenses.length)history.unshift({date:today,cars:daily,expenses:[...expenses]});
   cars=cars.filter(c=>c.payment==="Veresiye");
+  expenses=[];
   localStorage.setItem(CLOSE_KEY,today);save();
 }
 
@@ -125,7 +152,11 @@ function renderCredit(){
 }
 
 function renderHistory(){
-  document.getElementById("gecmisListesi").innerHTML=history.length?history.map(h=>`<div class="row"><b>${esc(h.date)}</b><div class="muted">${h.cars.length} araç · ${money(h.cars.reduce((a,c)=>a+Number(c.price||0),0))}</div></div>`).join(""):`<div class="empty">Henüz geçmiş kayıt yok.</div>`;
+  document.getElementById("gecmisListesi").innerHTML=history.length?history.map(h=>{const gross=(h.cars||[]).reduce((a,c)=>a+Number(c.price||0),0);const spent=(h.expenses||[]).reduce((a,e)=>a+Number(e.amount||0),0);return `<div class="row"><b>${esc(h.date)}</b><div class="muted">${(h.cars||[]).length} araç · Ciro ${money(gross)} · Gider ${money(spent)} · Net ${money(gross-spent)}</div></div>`}).join(""):`<div class="empty">Henüz geçmiş kayıt yok.</div>`;
+}
+
+function renderExpenses(){
+  document.getElementById("expenseList").innerHTML=expenses.length?expenses.map(e=>`<div class="row"><div class="titleline"><div><b>${esc(e.description)}</b><div class="muted">${new Date(e.createdAt).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</div></div><b>${money(e.amount)}</b></div><button class="danger" onclick="delExpense(${Number(e.id)})">Gideri Sil</button></div>`).join(""):`<div class="empty">Bugün gider eklenmedi.</div>`;
 }
 
 function render(){
@@ -133,12 +164,15 @@ function render(){
   const paid=cars.filter(c=>c.payment!=="Veresiye").reduce((a,c)=>a+Number(c.price||0),0);
   const cash=cars.filter(c=>(c.payment==="Nakit"||c.payment==="Cari")&&c.status==="Teslim Edildi").reduce((a,c)=>a+Number(c.price||0),0);
   const credit=cars.filter(c=>c.payment==="Veresiye").reduce((a,c)=>a+Number(c.price||0),0);
+  const spent=expenses.reduce((a,e)=>a+Number(e.amount||0),0);
   document.getElementById("count").textContent=cars.length;
   document.getElementById("ciro").textContent=money(paid);
-  document.getElementById("kasa").textContent=money(cash);
+  document.getElementById("gider").textContent=money(spent);
+  document.getElementById("net").textContent=money(paid-spent);
+  document.getElementById("kasa").textContent=money(cash-spent);
   document.getElementById("veresiye").textContent=money(credit);
   document.getElementById("list").innerHTML=cars.length?cars.map(carRow).join(""):`<div class="empty">Bugün henüz araç eklenmedi.</div>`;
-  renderCredit();renderHistory();
+  renderCredit();renderHistory();renderExpenses();
 }
 
 closeDayIfNeeded();render();setInterval(()=>{closeDayIfNeeded();render()},60000);
