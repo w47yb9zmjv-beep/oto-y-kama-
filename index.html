@@ -201,7 +201,7 @@ function render(){
   const cash=cars.filter(c=>(c.payment==="Nakit"||c.payment==="Cari")&&c.status==="Teslim Edildi").reduce((a,c)=>a+Number(c.price||0),0);
   const credit=cars.filter(c=>c.payment==="Veresiye").reduce((a,c)=>a+Number(c.price||0),0);
   const spent=expenses.reduce((a,e)=>a+Number(e.amount||0),0);
-  document.getElementById("count").textContent=cars.length;
+  cars.filter(c=>dayText(new Date(c.createdAt))===dayText()).lengthdocument.getElementById("count").textContent=
   document.getElementById("ciro").textContent=money(paid);
   document.getElementById("gider").textContent=money(spent);
   document.getElementById("net").textContent=money(paid-spent);
