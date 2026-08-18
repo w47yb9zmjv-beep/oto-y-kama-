@@ -18,6 +18,7 @@
 </head>
 <body>
   <h1>🚗 Oto Yıkama Takip</h1>
+  <button type="button" class="danger" onclick="if(confirm('Günü kapatmak istediğine emin misin? Veresiye kayıtları kalacak.')){const d=cars.filter(c=>c.payment!=='Veresiye');if(d.length||expenses.length)history.unshift({date:dayText(),cars:d,expenses:[...expenses]});cars=cars.filter(c=>c.payment==='Veresiye');expenses=[];localStorage.setItem(CLOSE_KEY,dayText());save();render();alert('Gün kapatıldı.')}">🌙 Günü Kapat</button>
 
   <div class="card stats">
     <div class="stat"><b id="count">0</b>Araç</div>
