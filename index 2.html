@@ -197,14 +197,16 @@ function renderExpenses(){
 function render(){
   closeDayIfNeeded();
   const paid=cars.filter(c=>c.payment!=="Veresiye").reduce((a,c)=>a+Number(c.price||0),0);
-  const cash=cars.filter(c=>(c.payment==="Nakit"||c.payment==="Cari")&&c.status==="Teslim Edildi").reduce((a,c)=>a+Number(c.price||0),0);
   const credit=cars.filter(c=>c.payment==="Veresiye").reduce((a,c)=>a+Number(c.price||0),0);
   const spent=expenses.reduce((a,e)=>a+Number(e.amount||0),0);
+  const oldIncome=history.reduce((total,h)=>total+(h.cars||[]).filter(c=>c.payment!=="Veresiye").reduce((sum,c)=>sum+Number(c.price||0),0),0);
+  const oldExpenses=history.reduce((total,h)=>total+(h.expenses||[]).reduce((sum,e)=>sum+Number(e.amount||0),0),0);
+  const cashBalance=oldIncome+paid-oldExpenses-spent;
   document.getElementById("count").textContent=cars.length;
   document.getElementById("ciro").textContent=money(paid);
   document.getElementById("gider").textContent=money(spent);
   document.getElementById("net").textContent=money(paid-spent);
-  document.getElementById("kasa").textContent=money(cash-spent);
+  document.getElementById("kasa").textContent=money(cashBalance);
   document.getElementById("veresiye").textContent=money(credit);
   document.getElementById("list").innerHTML=cars.length?cars.map(carRow).join(""):`<div class="empty">Bugün henüz araç eklenmedi.</div>`;
   renderCredit();renderHistory();renderExpenses();
